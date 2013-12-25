@@ -16,6 +16,9 @@ local _forces = {
 	[FORCE_ENEMY] = {},
 }
 
+local _forceWorlds = {
+}
+
 local _defProps = {
 	attack = 0,
 	attackSpeed = 1,
@@ -59,6 +62,28 @@ function Entity.updateTicks(ticks)
 end
 
 function Entity:moveTo(x, y)
+	if self._stoped then
+		self._stoped:destroy()
+		self._stoped = nil
+	end
+	
+	if self:isMoving() then
+		self._motionDriver:stop()
+	end
+	
+	self._motionDriver = self._sprite:seekLoc(x, y, self.moveSpeed, MOAIEaseType.LINEAR)
+end
+
+function Entity:isMoving()
+	return self._motionDriver and self._motionDriver:isBusy()
+end
+
+function Entity:_checkStop()
+	if not self._stoped and not self:isMoving() then
+		self._stoped = _forceWorlds[self._force]:addBody(MOAIBox2DBody.DYNAMIC)
+		local x, y = self:getWorldLoc()
+		self._stoped:addCircle(x, y, self.bodySize)
+	end
 end
 
 function Entity:destroy()
@@ -66,6 +91,15 @@ function Entity:destroy()
 	
 	for k, v in pairs(self._children) do
 		v:destroy()
+	end
+	
+	if self._motionDriver then
+		self._motionDriver:destroy()
+	end
+	
+	if self._stoped then
+		self._stoped:destroy()
+		self._stoped = nil
 	end
 end
 
@@ -82,13 +116,14 @@ function Entity:isInvincible()
 end
 
 function Entity:update(ticks)
-	self:searchTargets()
+	self:_searchTargets()
+	self:_checkStop()
 	
 	if #self._targets > 0 and self._lastAttackTicks + self.attackSpeed < ticks then
 	end
 end
 
-function Entity:searchTargets(force)
+function Entity:_searchTargets(force)
 	if not force then
 		force = self:getHostileForce()
 	end
