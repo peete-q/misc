@@ -20,6 +20,7 @@ local _entityDef = {
 	attack = 0,
 	attackSpeed = 1,
 	attackRange = 1,
+	fireRange = 1,
 	moveSpeed = 100,
 }
 
@@ -38,10 +39,7 @@ function Entity.new(force, parent, def)
 	_forces[self._force][self] = self
 end
 
-function Entity.update(dt)
-end
-
-function Entity.updateTicks()
+function Entity.updateEntities()
 end
 
 function Entity:destroy()
@@ -59,13 +57,13 @@ function Entity:isDead()
 	return self.def and self.hp <= 0
 end
 
-function Entity:onUpdate(dt)
+function Entity:isAttackable()
 end
 
-function Entity:onUpdateTicks()
+function Entity:update()
 end
 
-function Entity:searchTarget()
+function Entity:searchTarget(force)
 end
 
 function Entity:isInRange(target, range)
