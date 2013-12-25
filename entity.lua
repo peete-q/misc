@@ -16,22 +16,38 @@ local _forces = {
 	[FORCE_ENEMY] = {},
 }
 
-local _entityDef = {
+local _defProps = {
 	attack = 0,
 	attackSpeed = 1,
 	attackRange = 1,
 	fireRange = 1,
+	bodySize = 1,
 	moveSpeed = 100,
 }
 
-Entity._forces = _forces
-Entity.__index = Entity
+Entity.__index = function(self, key)
+	return Entity[key] or self._props[key] or _defProps[key]
+end
 
-function Entity.new(force, parent, def)
+Entity.__newindex = function(self, key, value)
+	if self._props[key] or _defProps[key] then
+		self._props[key] = value
+	end
+	error(string.format("[error] can't write entity property '%s'", key))
+end
+
+function Entity.initBg(w, h)
+end
+
+function Entity.new(force, parent, props, sprite)
 	local self = {
 		_force = force,
 		_children = {},
 		_parent = parent,
+		_props = props,
+		_sprite = sprite,
+		_lastAttackTicks = 0,
+		_targets = {},
 	}
 	if parent then
 		parent._children[self] = self
@@ -39,13 +55,17 @@ function Entity.new(force, parent, def)
 	_forces[self._force][self] = self
 end
 
-function Entity.updateEntities()
+function Entity.updateTicks(ticks)
+end
+
+function Entity:moveTo(x, y)
 end
 
 function Entity:destroy()
 	_forces[self._force][self] = nil
-	if self._parent then
-		self._parent[self] = nil
+	
+	for k, v in pairs(self._children) do
+		v:destroy()
 	end
 end
 
@@ -57,13 +77,28 @@ function Entity:isDead()
 	return self.def and self.hp <= 0
 end
 
-function Entity:isAttackable()
+function Entity:isInvincible()
+	return self._invincible
 end
 
-function Entity:update()
+function Entity:update(ticks)
+	self:searchTargets()
+	
+	if #self._targets > 0 and self._lastAttackTicks + self.attackSpeed < ticks then
+	end
 end
 
-function Entity:searchTarget(force)
+function Entity:searchTargets(force)
+	if not force then
+		force = self:getHostileForce()
+	end
+end
+
+function Entity:getHostileForce()
+	if self._force == self.FORCE_SELF then
+		return self.FORCE_ENEMY
+	end
+	return self.FORCE_SELF
 end
 
 function Entity:isInRange(target, range)
