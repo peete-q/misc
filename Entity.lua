@@ -21,25 +21,34 @@ local _defaultProps = {
 	attackPower = 0,
 	attackSpeed = 1,
 	attackRange = 100,
-	guardRange = 150,
+	guardRange = 160,
 	bodySize = 10,
 	moveSpeed = 10,
 	kind = 0,
+	movable = true,
 }
 
 Entity.__index = function(self, key)
-	return Entity[key] or self._props[key] or _defaultProps[key]
+	if self._props[key] ~= nil then
+		return self._props[key]
+	end
+	if _defaultProps[key] ~= nil then
+		return _defaultProps[key]
+	end
+	return Entity[key]
 end
 
 Entity.__newindex = function(self, key, value)
-	if self._props[key] or _defaultProps[key] then
+	if self._props[key] ~= nil or _defaultProps[key] ~= nil then
 		self._props[key] = value
 		return
 	end
 	error(string.format("[error] write undefined entity property '%s'", key))
 end
 
-function Entity.initBg(w, h)
+function Entity.initScene(w, h)
+	Entity.SCENE_WIDTH = w
+	Entity.SCENE_HEIGHT = h
 end
 
 function Entity.new(force, props, sprite)
@@ -91,6 +100,9 @@ function Entity:getWorldLoc()
 end
 
 function Entity:moveTo(x, y)
+	if not self.movable then
+		return
+	end
 	self:_cancelRigid()
 	self:stop()
 	self._motionDriver = self._sprite:seekLoc(x, y, self.moveSpeed, MOAIEaseType.LINEAR)
@@ -130,7 +142,7 @@ function Entity:_checkStop()
 	end
 	
 	if not self._rigid and not self:isMoving() then
-		self:_doRigid()
+		-- self:_doRigid()
 	end
 end
 
@@ -169,7 +181,9 @@ end
 
 function Entity:chase(target)
 	local x, y = target:getWorldLoc()
-	x = math.random(x - self.attackRange, x + self.attackRange)
+	local sx, sy = self:getWorldLoc()
+	local mx = sx * self.attackRange * 2 / Entity.SCENE_WIDTH
+	x = math.random(mx - self.bodySize, mx + self.bodySize)
 	self:moveTo(x, y)
 	self._stopRange = math.random(self.bodySize * 2)
 end
@@ -228,20 +242,20 @@ end
 
 function Entity:isPtInRange(x, y, range)
 	range = range or self.attackRange
-	local _x, _y = self:getWorldLoc()
-	return distanceSq(x, y, _x, _y) < (range ^ 2)
+	local sx, sy = self:getWorldLoc()
+	return distanceSq(x, y, sx, sy) < (range ^ 2)
 end
 
 function Entity:distance(other)
-	local x, y = self:getWorldLoc()
-	local _x, _y = other:getWorldLoc()
-	return distance(x, y, _x, _y)
+	local x, y = other:getWorldLoc()
+	local sx, sy = self:getWorldLoc()
+	return distance(x, y, sx, sy)
 end
 
 function Entity:distanceSq(other)
-	local x, y = self:getWorldLoc()
-	local _x, _y = other:getWorldLoc()
-	return distanceSq(x, y, _x, _y)
+	local x, y = other:getWorldLoc()
+	local sx, sy = self:getWorldLoc()
+	return distanceSq(x, y, sx, sy)
 end
 
 function Entity:applyDamage(amount, source)

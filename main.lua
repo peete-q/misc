@@ -43,6 +43,7 @@ function newspr(x, y)
 	return sprite
 end
 
+Entity.initScene(W, H)
 local ticks = 0
 timer.new(0.1, function()
 	Entity.updateTicks(ticks)
@@ -56,14 +57,14 @@ end
 
 function clickCallbackL(down)
 	if down then
-		local e = Entity.new(1, nil, newspr(X, Y))
+		local e = Entity.new(1, {movable=false}, newspr(X, Y))
 	end
 end
 
 function clickCallbackR(down)
 	if down then
 		for i = 1, 10 do
-			local x = math.random(-W/3, W/3)
+			local x = math.random(-W/2, W/2)
 			local e = Entity.new(2, nil, newspr(x, -H/2))
 			e:moveTo(x, H / 2)
 		end
