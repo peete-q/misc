@@ -63,7 +63,7 @@ end
 function clickCallbackR(down)
 	if down then
 		for i = 1, 10 do
-			local x = math.random(-W/2, W/2)
+			local x = math.random(-W/3, W/3)
 			local e = Entity.new(2, nil, newspr(x, -H/2))
 			e:moveTo(x, H / 2)
 		end

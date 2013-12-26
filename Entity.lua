@@ -21,7 +21,7 @@ local _defaultProps = {
 	attackPower = 0,
 	attackSpeed = 1,
 	attackRange = 100,
-	guardRange = 1000,
+	guardRange = 150,
 	bodySize = 10,
 	moveSpeed = 10,
 	kind = 0,
@@ -36,7 +36,7 @@ Entity.__newindex = function(self, key, value)
 		self._props[key] = value
 		return
 	end
-	error(string.format("[error] can't write entity property '%s'", key))
+	error(string.format("[error] write undefined entity property '%s'", key))
 end
 
 function Entity.initBg(w, h)
@@ -112,6 +112,7 @@ function Entity:_doRigid()
 	self._rigid = world:addBody(MOAIBox2DBody.DYNAMIC)
 	local x, y = self:getWorldLoc()
 	self._rigid:addCircle(x, y, self.bodySize)
+	self._sprite:setParent(self._rigid)
 end
 
 function Entity:_cancelRigid()
@@ -170,7 +171,7 @@ function Entity:chase(target)
 	local x, y = target:getWorldLoc()
 	x = math.random(x - self.attackRange, x + self.attackRange)
 	self:moveTo(x, y)
-	self._stopRange = math.random(self.bodySize)
+	self._stopRange = math.random(self.bodySize * 2)
 end
 
 function Entity:attack(target)
