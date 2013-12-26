@@ -58,6 +58,15 @@ end
 function clickCallbackL(down)
 	if down then
 		local e = Entity.new(1, {movable=false}, newspr(X, Y))
+			
+		local thread = MOAIThread.new()
+		thread:run(function()
+			while true do
+				local n = math.random(80, 100) / 100
+				MOAIThread.blockOnAction(e._sprite:seekScl(n, n, n, MOAIEaseType.SOFT_SMOOTH))
+				MOAIThread.blockOnAction(e._sprite:seekScl(1, 1, n, MOAIEaseType.SOFT_SMOOTH))
+			end
+		end)
 	end
 end
 
