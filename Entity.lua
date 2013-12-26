@@ -20,11 +20,12 @@ local _forceWorlds = {
 }
 
 local _defaultProps = {
+	hp = 100,
 	attackPower = 0,
 	attackSpeed = 1,
-	attackRange = 1,
-	guardRange = 1,
-	bodySize = 1,
+	attackRange = 100,
+	guardRange = 1000,
+	bodySize = 10,
 	moveSpeed = 10,
 	kind = 0,
 }
@@ -51,6 +52,7 @@ function Entity.new(force, props, sprite)
 		_props = props or {},
 		_sprite = sprite or none,
 		_motionDriver = none,
+		_target = none,
 		_lastAttackTicks = 0,
 		_attackPriorities = {},
 	}
@@ -61,6 +63,11 @@ function Entity.new(force, props, sprite)
 end
 
 function Entity.updateTicks(ticks)
+	for i, f in ipairs(_forces) do
+		for k, v in pairs(f) do
+			v:update(ticks)
+		end
+	end
 end
 
 function Entity:destroy()
@@ -116,7 +123,7 @@ function Entity:_cancelRigid()
 end
 
 function Entity:_checkStop()
-	if self._target and self:isMoving() and self:isInRange(selg._target) then
+	if self._target and self:isMoving() and self:isInRange(self._target) then
 		self:stop()
 	end
 	
@@ -140,8 +147,8 @@ end
 function Entity:update(ticks)
 	self:_checkStop()
 	
-	if self._target:isDead() then
-		self._target = nil
+	if self._target and self._target:isDead() then
+		self._target = none
 	end
 	
 	if not self._target then
@@ -177,7 +184,7 @@ function Entity:_searchAttackTarget()
 	local force = self:getHostileForce()
 	local dist = self.guardRange ^ 2
 	local priority = 0
-	local target = nil
+	local target = none
 	for k, v in pairs(force) do
 		local d = self:distanceSq(v)
 		local p = self:attackPriority(v)
@@ -226,6 +233,12 @@ function Entity:distance(other)
 	local x, y = self:getWorldLoc()
 	local _x, _y = other:getWorldLoc()
 	return distance(x, y, _x, _y)
+end
+
+function Entity:distanceSq(other)
+	local x, y = self:getWorldLoc()
+	local _x, _y = other:getWorldLoc()
+	return distanceSq(x, y, _x, _y)
 end
 
 function Entity:applyDamage(amount, source)
