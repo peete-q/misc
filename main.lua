@@ -31,7 +31,7 @@ local timer = require "timer"
 
 local R = 10
 local texture = MOAIGfxQuad2D.new ()
-texture:setTexture ( 'moai.png' )
+texture:setTexture ( 'bg.png' )
 texture:setRect ( -R, -R, R, R )
 
 function newspr(x, y)

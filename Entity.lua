@@ -16,9 +16,6 @@ local _forces = {
 	[Entity.FORCE_ENEMY] = {},
 }
 
-local _forceWorlds = {
-}
-
 local _defaultProps = {
 	hp = 100,
 	attackPower = 0,
@@ -50,11 +47,13 @@ function Entity.new(force, props, sprite)
 		_force = force,
 		_children = {},
 		_props = props or {},
+		_lastAttackTicks = 0,
+		_attackPriorities = {},
 		_sprite = sprite or none,
 		_motionDriver = none,
 		_target = none,
-		_lastAttackTicks = 0,
-		_attackPriorities = {},
+		_rigid = none,
+		_stopRange = 0,
 	}
 	_forces[self._force][self] = self
 	
@@ -92,7 +91,7 @@ function Entity:getWorldLoc()
 end
 
 function Entity:moveTo(x, y)
-	-- self:_cancelRigid()
+	self:_cancelRigid()
 	self:stop()
 	self._motionDriver = self._sprite:seekLoc(x, y, self.moveSpeed, MOAIEaseType.LINEAR)
 end
@@ -110,7 +109,7 @@ end
 
 function Entity:_doRigid()
 	assert(not self._rigid)
-	self._rigid = _forceWorlds[self._force]:addBody(MOAIBox2DBody.DYNAMIC)
+	self._rigid = world:addBody(MOAIBox2DBody.DYNAMIC)
 	local x, y = self:getWorldLoc()
 	self._rigid:addCircle(x, y, self.bodySize)
 end
@@ -123,12 +122,14 @@ function Entity:_cancelRigid()
 end
 
 function Entity:_checkStop()
-	if self._target and self:isMoving() and self:isInRange(self._target) then
-		self:stop()
+	if self._target and self:isMoving() then
+		if self:isInRange(self._target, self.attackRange - self._stopRange) then
+			self:stop()
+		end
 	end
 	
 	if not self._rigid and not self:isMoving() then
-		-- self:_doRigid()
+		self:_doRigid()
 	end
 end
 
@@ -169,6 +170,7 @@ function Entity:chase(target)
 	local x, y = target:getWorldLoc()
 	x = math.random(x - self.attackRange, x + self.attackRange)
 	self:moveTo(x, y)
+	self._stopRange = math.random(self.bodySize)
 end
 
 function Entity:attack(target)
