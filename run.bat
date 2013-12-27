@@ -1,1 +1,1 @@
-..\..\..\bin\win32\moai.exe "..\..\config\config.lua" "main.lua"
+%MOAI_BIN%\moai.exe "../init.lua" "main.lua"
