@@ -1,5 +1,6 @@
 
-local math2d = require("math2d")
+local math2d = require "math2d"
+local Arena = require "Arena"
 
 local distance = math2d.distance
 local distanceSq = math2d.distanceSq
@@ -7,13 +8,6 @@ local distanceSq = math2d.distanceSq
 local none = false
 
 local Entity = {
-	FORCE_SELF = 1,
-	FORCE_ENEMY = 2,
-}
-
-local _forces = {
-	[Entity.FORCE_SELF] = {},
-	[Entity.FORCE_ENEMY] = {},
 }
 
 local _defaultProps = {
@@ -46,12 +40,7 @@ Entity.__newindex = function(self, key, value)
 	error(string.format("[error] write undefined entity property '%s'", key))
 end
 
-function Entity.initScene(w, h)
-	Entity.SCENE_WIDTH = w
-	Entity.SCENE_HEIGHT = h
-end
-
-function Entity.new(force, props, sprite)
+function Entity.new(props, sprite)
 	local self = {
 		_force = force,
 		_children = {},
@@ -62,25 +51,15 @@ function Entity.new(force, props, sprite)
 		_motionDriver = none,
 		_target = none,
 		_rigid = none,
+		_arena = none,
 		_stopRange = 0,
 	}
-	_forces[self._force][self] = self
 	
 	setmetatable(self, Entity)
 	return self
 end
 
-function Entity.updateTicks(ticks)
-	for i, f in ipairs(_forces) do
-		for k, v in pairs(f) do
-			v:update(ticks)
-		end
-	end
-end
-
 function Entity:destroy()
-	_forces[self._force][self] = nil
-	
 	for k, v in pairs(self._children) do
 		v:destroy()
 	end
@@ -182,7 +161,7 @@ end
 function Entity:chase(target)
 	local x, y = target:getWorldLoc()
 	local sx, sy = self:getWorldLoc()
-	local mx = sx * self.attackRange * 2 / Entity.SCENE_WIDTH
+	local mx = sx * self.attackRange * 2 / self._arena.WIDTH
 	x = math.random(mx - self.bodySize, mx + self.bodySize)
 	self:moveTo(x, y)
 	self._stopRange = math.random(self.bodySize * 2)
@@ -215,17 +194,14 @@ function Entity:_searchAttackTarget()
 end
 
 function Entity:getMyForce()
-	if self._force == self.FORCE_SELF then
-		return _forces[self.FORCE_SELF]
-	end
-	return _forces[self.FORCE_ENEMY]
+	return self._arena:getForce(self._force)
 end
 
 function Entity:getHostileForce()
-	if self._force == self.FORCE_SELF then
-		return _forces[self.FORCE_ENEMY]
+	if self._force == Arena.FORCE_SELF then
+		return self._arena:getForce(Arena.FORCE_ENEMY)
 	end
-	return _forces[self.FORCE_SELF]
+	return self._arena:getForce(Arena.FORCE_SELF)
 end
 
 function Entity:isInRange(target, range)

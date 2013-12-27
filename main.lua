@@ -26,6 +26,7 @@ world:setUnitsToMeters ( 1 )
 world:start ()
 layer:setBox2DWorld ( world )
 
+local Arena = require "Arena"
 local Entity = require "Entity"
 local timer = require "timer"
 
@@ -43,10 +44,11 @@ function newspr(x, y)
 	return sprite
 end
 
-Entity.initScene(W, H)
+arena = Arena.new(W, H)
+
 local ticks = 0
 timer.new(0.1, function()
-	Entity.updateTicks(ticks)
+	arena:update(ticks)
 	ticks = ticks + 1
 end)
 
@@ -57,12 +59,13 @@ end
 
 function clickCallbackL(down)
 	if down then
-		local e = Entity.new(1, {movable=false}, newspr(X, Y))
-			
+		local e = Entity.new({movable=false}, newspr(X, Y))
+		arena:addUnit(1, function() return e end)
+		
 		local thread = MOAIThread.new()
 		thread:run(function()
 			while true do
-				local n = math.random(80, 100) / 100
+				local n = math.random(80, 120) / 100
 				MOAIThread.blockOnAction(e._sprite:seekScl(n, n, n, MOAIEaseType.SOFT_SMOOTH))
 				MOAIThread.blockOnAction(e._sprite:seekScl(1, 1, n, MOAIEaseType.SOFT_SMOOTH))
 			end
@@ -73,8 +76,9 @@ end
 function clickCallbackR(down)
 	if down then
 		for i = 1, 10 do
-			local x = math.random(-W/2, W/2)
-			local e = Entity.new(2, nil, newspr(x, -H/2))
+			local x = math.random(-W/30, W/30) * 10
+			local e = Entity.new(nil, newspr(x, -H/2))
+			arena:addUnit(2, function() return e end)
 			e:moveTo(x, H / 2)
 		end
 	end
