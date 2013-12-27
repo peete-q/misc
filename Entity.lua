@@ -20,6 +20,15 @@ local _defaultProps = {
 	moveSpeed = 10,
 	kind = 0,
 	movable = true,
+	specialPower = none,
+	
+	bodyGfx = none,
+	propellerGfx = none,
+	muzzleGfx = none,
+	impactGfx = none,
+	impactSfx = none,
+	fireSfx = none,
+	explodeGfx = none,
 }
 
 Entity.__index = function(self, key)
