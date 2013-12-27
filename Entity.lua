@@ -74,6 +74,10 @@ function Entity:destroy()
 	end
 end
 
+function Entity:setWorldLoc(x, y)
+	self._sprite:setLoc(x, y)
+end
+
 function Entity:getWorldLoc()
 	return self._sprite:getLoc()
 end

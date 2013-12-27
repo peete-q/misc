@@ -4,6 +4,8 @@ local Arena = {
 	FORCE_ENEMY = 2,
 }
 
+local SPACE_SIZE = 10
+
 Arena.__index = Arena
 
 function Arena.new(w, h, seed)
@@ -15,6 +17,8 @@ function Arena.new(w, h, seed)
 			[Arena.FORCE_SELF] = {},
 			[Arena.FORCE_ENEMY] = {},
 		},
+		_myY = -h / 2,
+		_enemyY = h / 2,
 	}
 	setmetatable(self, Arena)
 	return self
@@ -24,9 +28,17 @@ function Arena:destroy()
 end
 
 function Arena:addUnit(force, spawn)
-	local entity = spawn()
-	entity._arena = self
-	self._forces[force][entity] = entity
+	local e = spawn()
+	e._arena = self
+	self._forces[force][e] = e
+	return e
+end
+
+function Arena:spawnUnit(force, spawn)
+	local e = self:addUnit(force, spawn)
+	local n = (self.WIDTH / 2) / SPACE_SIZE
+	local x = math.random(-n, n) * SPACE_SIZE
+	e:setWorldLoc(x, self._myY - e.bodySize)
 end
 
 function Arena:getForce(nb)

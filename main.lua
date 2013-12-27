@@ -35,12 +35,11 @@ local texture = MOAIGfxQuad2D.new ()
 texture:setTexture ( 'bg.png' )
 texture:setRect ( -R, -R, R, R )
 
-function newspr(x, y)
+function newspr()
 	local sprite = MOAIProp2D.new ()
 	sprite:setDeck ( texture )
 	sprite:setParent ( body )
 	layer:insertProp ( sprite )
-	sprite:setLoc(x, y)
 	return sprite
 end
 
@@ -59,13 +58,14 @@ end
 
 function clickCallbackL(down)
 	if down then
-		local e = Entity.new({movable=false}, newspr(X, Y))
+		local e = Entity.new({movable=false}, newspr())
 		arena:addUnit(1, function() return e end)
+		e:setWorldLoc(X, Y)
 		
 		local thread = MOAIThread.new()
 		thread:run(function()
 			while true do
-				local n = math.random(80, 120) / 100
+				local n = math.random(80, 100) / 100
 				MOAIThread.blockOnAction(e._sprite:seekScl(n, n, n, MOAIEaseType.SOFT_SMOOTH))
 				MOAIThread.blockOnAction(e._sprite:seekScl(1, 1, n, MOAIEaseType.SOFT_SMOOTH))
 			end
@@ -76,9 +76,8 @@ end
 function clickCallbackR(down)
 	if down then
 		for i = 1, 10 do
-			local x = math.random(-W/30, W/30) * 10
-			local e = Entity.new(nil, newspr(x, -H/2))
-			arena:addUnit(2, function() return e end)
+			local e = Entity.new(nil, newspr())
+			arena:spawnUnit(2, function() return e end)
 			e:moveTo(x, H / 2)
 		end
 	end
