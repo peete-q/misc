@@ -91,7 +91,7 @@ end
 -- calc(P, R, 25)
 -- calc(P, R, 30)
 
-local P, R = 70, 0.0655 * 0.85
+local P, R = 20, 0.0655 * 0.85
 calc1(P, R, 5)
 calc1(P, R, 10)
 calc1(P, R, 15)
